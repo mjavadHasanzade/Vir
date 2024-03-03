@@ -10,11 +10,29 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+model Memory {
+    id          String   @id @default(cuid())
+    title       String
+    description String?
+    content     String?
+    User        User?    @relation(fields: [userId], references: [id])
+    userId      String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@index([name])
+    @@index([title])
+}
+
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    familyName    String
+    birthday      DateTime
+    memories      Memory[]
 }
