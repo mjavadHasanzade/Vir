@@ -6,8 +6,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
+        sans: "cursive",
       },
+      colors: {
+        typo: "#2f4f4f"
+      }
     },
 
     screens: {
