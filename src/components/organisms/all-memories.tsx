@@ -2,7 +2,16 @@ import { MdSort } from 'react-icons/md'
 import { RxFileText } from 'react-icons/rx'
 import MemoryCard from '../molecules/memory-card'
 
-type Props = {}
+type Props = {
+    memories: {
+        title: string;
+        cover: string;
+        description: string;
+        score: number;
+        mode: string;
+        date?: string;
+    }[]
+}
 
 const AllMemories = (props: Props) => {
     return (
@@ -22,7 +31,7 @@ const AllMemories = (props: Props) => {
                 </div>
 
                 <div className="">
-                    {MEMOS.map(item =>
+                    {props.memories.map(item =>
                         <MemoryCard mode={item.mode} score={item.score} key={item.title} cover={item.cover} description={item.description} title={item.title} />
                     )}
 
