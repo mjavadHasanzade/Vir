@@ -11,7 +11,7 @@ type Props = {
 const Draft = (props: Props) => {
   return (
     <section>
-      <div className="p-4 bg-white rounded-xl">
+      <div className="p-4 bg-white rounded-xl mb-4">
         <div className="flex items-center">
           <img src={props.cover} alt="" className='w-10 h-8 rounded-lg object-cover' />
           <h2 className='text-lg ml-4 font-bold mb-2 truncate '>{props.title}</h2>

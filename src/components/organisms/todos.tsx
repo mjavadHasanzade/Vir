@@ -15,7 +15,7 @@ type Props = {
 const Todos = (props: Props) => {
     return (
         <section>
-            <div className="bg-[#F2F2F2] rounded-xl p-4 mt-4">
+            <div className="bg-[#F2F2F2] rounded-xl p-4 mb-4">
                 <h1 className='flex items-center'>
                     <HiOutlineDocumentCheck className='mr-4 text-2xl' />
                     <span className='text-lg font-bold'>
