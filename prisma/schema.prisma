@@ -20,11 +20,12 @@ model Memory {
     content     String?
     cover       String?
     score       Int?
-    model       String?
+    mode        String?
     User        User?    @relation(fields: [userId], references: [id])
     userId      String?
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
+    published   Boolean? @default(false)
 
     @@index([title])
 }
