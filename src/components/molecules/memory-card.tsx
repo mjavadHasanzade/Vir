@@ -2,11 +2,10 @@ import React from 'react'
 
 type Props = {
     title: string;
-    cover: string;
-    description: string;
-    score: number;
-    mode: string;
-    date?: string;
+    cover: string | null;
+    description: string | null;
+    score: number | null;
+    mode: string | null;
 }
 
 const MemoryCard = (props: Props) => {

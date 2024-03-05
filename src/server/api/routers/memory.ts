@@ -24,9 +24,14 @@ export const memoryRouter = createTRPCRouter({
       });
     }),
 
-  getLatest: publicProcedure.query(({ ctx }) => {
-    return ctx.db.memory.findFirst({
+  getLatest: publicProcedure.query(async ({ ctx }) => {
+    const memories = await ctx.db.memory.findMany({
       orderBy: { createdAt: "desc" },
     });
+
+    return {
+      memories: memories.slice(0, 3),
+      count: memories.length
+    };
   }),
 });

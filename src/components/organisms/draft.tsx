@@ -3,9 +3,9 @@ import React from 'react'
 
 type Props = {
   title: string;
-  cover: string;
-  content: string;
-  mode: string;
+  cover: string | null;
+  content: string | null;
+  mode: string | null;
 }
 
 const Draft = (props: Props) => {

@@ -5,12 +5,13 @@ import MemoryCard from '../molecules/memory-card'
 type Props = {
     memories: {
         title: string;
-        cover: string;
-        description: string;
-        score: number;
-        mode: string;
-        date?: string;
-    }[]
+        cover: string | null;
+        description: string | null;
+        score: number | null;
+        mode: string | null;
+        createdAt: Date;
+    }[],
+    count: number
 }
 
 const AllMemories = (props: Props) => {
@@ -25,7 +26,7 @@ const AllMemories = (props: Props) => {
 
                 </h1>
                 <div className="my-6 flex items-center justify-between">
-                    <button className='text-[#8FA5FF]'>124 Memory</button>
+                    <button className='text-[#8FA5FF]'>{props.count} Memories</button>
                     <button> <MdSort className='text-lg' /> </button>
 
                 </div>
