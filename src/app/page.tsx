@@ -1,9 +1,7 @@
 import { unstable_noStore as noStore } from "next/cache";
-import Link from "next/link";
 import AllMemories from "~/components/organisms/all-memories";
 import Draft from "~/components/organisms/draft";
 import Todos from "~/components/organisms/todos";
-
 import { api } from "~/trpc/server";
 
 const TodoList = [
@@ -15,6 +13,12 @@ const TodoList = [
 export default async function Home() {
   noStore();
   const { count, memories } = await api.memory.getLatest.query();
+  const lastDraft = await api.memory.getLastDraft.query();
+
+
+  if (count === 0)
+    await api.memory.seed.query();
+
 
   return (
     <div className="min-h-screen">
@@ -23,8 +27,8 @@ export default async function Home() {
           <AllMemories memories={memories} count={count} />
         </div>
         <div className="w-1/2">
-          {memories.length &&
-            <Draft title={memories[0]!.title} cover={memories[0]!.cover} content={memories[0]!.content} mode={memories[0]!.mode} />
+          {lastDraft &&
+            <Draft title={lastDraft.title} cover={lastDraft.cover} content={lastDraft.content} mode={lastDraft.mode} />
           }
           <Todos todos={TodoList} />
         </div>
