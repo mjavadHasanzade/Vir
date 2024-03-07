@@ -9,7 +9,8 @@ export default {
         sans: "cursive",
       },
       colors: {
-        typo: "#2f4f4f"
+        typo: "#2f4f4f",
+        muted: "#8C8D8C"
       }
     },
 
