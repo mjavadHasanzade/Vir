@@ -1,5 +1,6 @@
 import { memoryRouter } from "~/server/api/routers/memory";
 import { createTRPCRouter } from "~/server/api/trpc";
+import { userOperationsRouter } from "./routers/user-operations";
 
 /**
  * This is the primary router for your server.
@@ -8,6 +9,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   memory: memoryRouter,
+  user: userOperationsRouter
 });
 
 // export type definition of API
