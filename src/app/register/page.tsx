@@ -1,12 +1,25 @@
 "use client"
 
 import React, { useState } from 'react';
+import { api } from "~/trpc/react";
 
 const LoginPage = () => {
 
     const [signInActive, setSignInActive] = useState(false);
     const [signupForm, setSignupForm] = useState({ name: "", familyName: "", username: "", email: "", password: "" });
-    const [signinForm, setSigninForm] = useState({ username: "", password: "" })
+    const [signinForm, setSigninForm] = useState({ email: "", password: "" });
+
+    const userSignup = api.user.register.useMutation({
+        onSuccess: () => {
+            console.log("User registration successful");
+        }
+    });
+
+    const userSignin = api.user.login.useMutation({
+        onSuccess: () => {
+            console.log("User login successful");
+        }
+    });
 
 
     return (
@@ -20,16 +33,16 @@ const LoginPage = () => {
                     {signInActive && <div className="px-10 py-8  flex flex-col justify-center items-center">
                         <h2 className="text-2xl font-bold mb-4">Login</h2>
                         <div className="mb-4 w-full">
-                            <label htmlFor='username' className='text-muted cursor-pointer mb-2  text-sm inline-block'>
-                                Username
+                            <label htmlFor='email' className='text-muted cursor-pointer mb-2  text-sm inline-block'>
+                                Email
                             </label>
                             <input
-                                id='username'
+                                id='email'
                                 type="text"
                                 placeholder="JohnSmith007"
                                 className="w-full bg-[#FAFFFB]  border border-[#D9DBDA] shadow-sm outline-none shadow-[#D9DBDA] py-2 px-4 text-typo text-sm placeholder:text-gray-300  placeholder:tracking-wider rounded-[.25rem]"
-                                value={signinForm.username}
-                                onChange={e => setSigninForm({ ...signinForm, username: e.target.value })}
+                                value={signinForm.email}
+                                onChange={e => setSigninForm({ ...signinForm, email: e.target.value })}
                             />
                         </div>
                         <div className="mb-4 w-full">
@@ -48,7 +61,8 @@ const LoginPage = () => {
 
                         <div className="mt-6 w-full">
 
-                            <button className="w-full bg-[#263238] text-white py-2 px-4 rounded-[.25rem] text-sm mb-4">
+                            <button className="w-full bg-[#263238] text-white py-2 px-4 rounded-[.25rem] text-sm mb-4"
+                                onClick={() => userSignin.mutate(signinForm)}>
                                 Sign in
                             </button>
                         </div>
@@ -140,7 +154,11 @@ const LoginPage = () => {
 
                         <div className="mt-6 w-full">
 
-                            <button className="w-full bg-[#263238] text-white py-2 px-4 rounded-[.25rem] text-sm mb-4">
+                            <button className="w-full bg-[#263238] text-white py-2 px-4 rounded-[.25rem] text-sm mb-4"
+                                onClick={() => {
+                                    userSignup.mutate(signupForm)
+                                    console.log(signupForm);
+                                }}>
                                 Sign up
                             </button>
                         </div>
