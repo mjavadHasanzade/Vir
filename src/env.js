@@ -11,7 +11,32 @@ export const env = createEnv({
       .string()
       .refine(
         (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
-        "You forgot to change the default URL"
+        "You forgot to change the default URL",
+      ),
+    GOOGLE_CLIENT_ID: z
+      .string()
+      .refine(
+        (str) => !str.includes("GOOGLE_CLIENT_ID"),
+        "You forgot to change the default GOOGLE_CLIENT_ID",
+      ),
+    GOOGLE_CLIENT_SECRET: z
+      .string()
+      .refine(
+        (str) => !str.includes("GOOGLE_CLIENT_SECRET"),
+        "You forgot to change the default GOOGLE_CLIENT_SECRET",
+      ),
+    GITHUB_ID: z
+      .string()
+      .refine(
+        (str) => !str.includes("GITHUB_ID"),
+        "You forgot to change the default GITHUB_ID",
+      ),
+
+    GITHUB_SECRET: z
+      .string()
+      .refine(
+        (str) => !str.includes("GITHUB_SECRET"),
+        "You forgot to change the default GITHUB_SECRET",
       ),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -33,7 +58,12 @@ export const env = createEnv({
    */
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GITHUB_ID: process.env.GITHUB_ID,
+    GITHUB_SECRET: process.env.GITHUB_SECRET,
     NODE_ENV: process.env.NODE_ENV,
+
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
