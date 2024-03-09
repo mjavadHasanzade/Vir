@@ -1,17 +1,12 @@
 "use client"
 import React, { useState } from 'react'
 import { api } from "~/trpc/react";
-import { signIn } from "next-auth/react"
+import { type ClientSafeProvider, type LiteralUnion, signIn } from "next-auth/react"
 import Image from 'next/image';
+import { type BuiltInProviderType } from 'next-auth/providers/index';
 
 type Props = {
-    providers: Record<string, {
-        id: string,
-        name: string,
-        type: string,
-        signinUrl: string,
-        callbackUrl: string
-    }>
+    providers: Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null;
 }
 
 const LoginForms: React.FC<Props> = (props) => {
@@ -187,19 +182,13 @@ const LoginForms: React.FC<Props> = (props) => {
 export default LoginForms;
 
 interface ProvidersProps {
-    providers: Record<string, {
-        id: string;
-        name: string;
-        type: string;
-        signinUrl: string;
-        callbackUrl: string;
-    }>;
+    providers: Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null;
 }
 
 const Providers: React.FC<ProvidersProps> = ({ providers }) => {
     return (
         <div className="mb-4">
-            {Object.values(providers).map((provider, index) => (
+            {providers && Object.values(providers).map((provider, index) => (
                 <div
                     key={index}
                     className="w-full py-2 px-4 rounded-md mb-1 text-sm flex items-center cursor-pointer justify-center text-muted"
