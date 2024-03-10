@@ -2,7 +2,6 @@ import { unstable_noStore as noStore } from "next/cache";
 import AllMemories from "~/components/organisms/all-memories";
 import Draft from "~/components/organisms/draft";
 import Todos from "~/components/organisms/todos";
-import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
 
 const TodoList = [
@@ -15,8 +14,6 @@ export default async function Home() {
   noStore();
   const { count, memories } = await api.memory.getLatest.query();
   const lastDraft = await api.memory.getLastDraft.query();
-  const session = await getServerAuthSession();
-  console.log({ session });
 
 
   if (count === 0)

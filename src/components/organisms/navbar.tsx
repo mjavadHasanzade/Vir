@@ -1,17 +1,23 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import { TbPlus, TbSettings2 } from 'react-icons/tb';
 
-const Navbar = () => {
+type props = { user: { name?: string, image?: string } }
+
+const Navbar = ({ user: { image, name } }: props) => {
+
   return (
     <nav className="flex items-center justify-between bg-white rounded-xl px-4 py-4 my-4">
       <div className="flex items-center space-x-4">
-        <img
-          className="w-8 h-8 rounded-full"
-          src="https://solobeat.ir/assets/images/user.jpg"
-          alt="User Avatar"
-        />
-        <span className="text-gray-800 font-medium">John Doe</span>
+        <div className="w-8 h-8 rounded-full relative overflow-hidden">
+          <Image
+            src={image ?? "https://solobeat.ir/assets/images/user.jpg"}
+            alt={name ?? "Unknown"}
+            fill
+          />
+        </div>
+        <span className="text-gray-800 font-medium">{name}</span>
       </div>
       <ul className="flex items-center space-x-4">
         <li className="px-3 py-1 bg-[#8CA6FC] text-white rounded-xl font-sm">
