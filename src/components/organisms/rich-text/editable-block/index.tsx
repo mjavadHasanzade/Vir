@@ -1,6 +1,9 @@
 "use client"
 import React, { useRef, useEffect, useState } from 'react';
 import ContentEditable, { type ContentEditableEvent } from 'react-contenteditable';
+import SelectMenu from '../select-menu';
+import getCaretCoordinates from '~/utils/getCaretCoordinates';
+import { setCaretToEnd } from '~/utils';
 
 interface Block {
     id: string;
@@ -23,6 +26,10 @@ function EditableBlock(props: EditableBlockProps) {
     const [htmlBackup, setHtmlBackup] = useState('');
     const [previousKey, setPreviousKey] = useState('');
     const contentEditable = useRef<any>(undefined);
+
+
+    const [selectMenuIsOpen, setSelectMenuIsOpen] = useState(false);
+    const [selectMenuPosition, setSelectMenuPosition] = useState<{ x: number | null, y: number | null }>({ x: null, y: null });
 
     // useEffect(() => {
     //     setHtml(props.html);
@@ -79,15 +86,52 @@ function EditableBlock(props: EditableBlockProps) {
         });
     };
 
+    const openSelectMenuHandler = () => {
+        const { x, y } = getCaretCoordinates();
+        setSelectMenuIsOpen(true);
+        setSelectMenuPosition({ x, y });
+        document.addEventListener('click', closeSelectMenuHandler);
+    };
+
+    const closeSelectMenuHandler = () => {
+        setHtml("");
+        setSelectMenuIsOpen(false);
+        setSelectMenuPosition({ x: null, y: null });
+        document.removeEventListener('click', closeSelectMenuHandler);
+    };
+
+    const tagSelectionHandler = (tag: string) => {
+        setTag(tag);
+        setHtml(html);
+        setCaretToEnd(contentEditable.current);
+        closeSelectMenuHandler();
+    };
+
+    const onKeyUpHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === '/') {
+            openSelectMenuHandler();
+        }
+    }
+
     return (
-        <ContentEditable
-            className="Block"
-            innerRef={contentEditable}
-            html={html}
-            tagName="div"
-            onChange={onChangeHandler}
-            onKeyDown={onKeyDownHandler}
-        />
+        <>
+            {selectMenuIsOpen && (
+                <SelectMenu
+                    position={selectMenuPosition}
+                    onSelect={tagSelectionHandler}
+                    close={closeSelectMenuHandler}
+                />
+            )}
+            <ContentEditable
+                className="editable-block"
+                innerRef={contentEditable}
+                html={html}
+                tagName={tag}
+                onChange={onChangeHandler}
+                onKeyDown={onKeyDownHandler}
+                onKeyUp={onKeyUpHandler}
+            />
+        </>
     );
 }
 export default EditableBlock;
