@@ -1,6 +1,6 @@
-const getCaretCoordinates = (): { x: number | null; y: number | null } => {
-    let x: number | null = null;
-    let y: number | null = null;
+const getCaretCoordinates = (): { x: number; y: number } => {
+    let x: number;
+    let y: number;
     const selection = window.getSelection();
     if (selection && selection.rangeCount !== 0) {
         const range = selection.getRangeAt(0).cloneRange();
