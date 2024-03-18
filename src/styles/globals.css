@@ -135,3 +135,9 @@
   border-top-right-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
 }
+
+h1.editable-block,
+h2.editable-block{
+  font-size: 40px !important;
+  font-weight: 600;
+}
