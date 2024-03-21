@@ -1,0 +1,142 @@
+@import "../../../../shared/variables.scss";
+
+.block {
+  padding: 0.25rem;
+  // Better support for safari
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.block:focus,
+.isDragging,
+.blockSelected {
+  background: $tertiary;
+  outline-color: $tertiary;
+  & ~ .dragHandle {
+    opacity: 1;
+  }
+}
+
+.placeholder {
+  color: rgba(72, 72, 72, 0.25);
+}
+
+.draggable {
+  /* Headings */
+  h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  /* Paragraphs and Text */
+  p {
+    margin-bottom: 16px;
+  }
+
+  /* Links */
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Lists */
+  ul,
+  ol {
+    margin-bottom: 16px;
+  }
+
+  li {
+    margin-bottom: 8px;
+  }
+
+  /* Blockquotes */
+  blockquote {
+    margin: 0;
+    padding: 16px;
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+    margin-bottom: 16px;
+  }
+
+  /* Code */
+  code {
+    font-family: "Courier New", monospace;
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  /* Preformatted Text */
+  pre {
+    font-family: "Courier New", monospace;
+    background-color: #f8f9fa;
+    padding: 16px;
+    overflow: auto;
+    border-radius: 4px;
+  }
+}
+.draggable .block {
+  display: inline-block;
+  width: calc(100% - 1rem);
+}
+
+.draggable:hover {
+  .block {
+    background: #fafafa;
+    outline-color: $tertiary;
+  }
+  .dragHandle {
+    opacity: 1;
+  }
+}
+
+.dragHandle {
+  opacity: 0;
+  display: inline-block;
+  width: 1rem;
+  img {
+    display: block;
+    margin: auto;
+  }
+}
+
+.image {
+  display: inline-block;
+  width: calc(100% - 1rem);
+  padding: 0.25rem;
+  img {
+    display: block;
+    max-height: 600px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+.blockSelected.image {
+  opacity: 0.75;
+}
+
+.fileInputLabel {
+  display: block;
+  padding: 0.5rem 0.25rem;
+  color: #888888;
+  font-size: 0.875rem;
+  letter-spacing: 0.5px;
+}

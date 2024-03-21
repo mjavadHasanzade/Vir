@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
-
+import { DragDropContext, type DropResult, Droppable } from "react-beautiful-dnd";
+import { resetServerContext } from "react-beautiful-dnd"
+resetServerContext()
 import EditableBlock from "./editable-block";
 
 import { setCaretToEnd, objectId, initialBlock } from "~/utils";
@@ -11,18 +12,18 @@ import Notice from "./notice";
 // A page is represented by an array containing several blocks
 // [
 //   {
-//     _id: "5f54d75b114c6d176d7e9765",
+//     id: "5f54d75b114c6d176d7e9765",
 //     html: "Heading",
 //     tag: "h1",
 //     imageUrl: "",
 //   },
 //   {
-//     _id: "5f54d75b114c6d176d7e9766",
+//     id: "5f54d75b114c6d176d7e9766",
 //     html: "I am a <strong>paragraph</strong>",
 //     tag: "p",
 //     imageUrl: "",
 //   },
-//     _id: "5f54d75b114c6d176d7e9767",
+//     id: "5f54d75b114c6d176d7e9767",
 //     html: "/im",
 //     tag: "img",
 //     imageUrl: "images/test.png",
@@ -30,11 +31,10 @@ import Notice from "./notice";
 // ]
 
 interface Block {
-    _id: string;
-    html?: string;
-    tag?: string;
-    imageUrl?: string;
-    ref?: HTMLElement;
+    id: string;
+    html: string;
+    tag: string;
+    imageUrl: string;
 }
 
 const EditablePage = () => {
@@ -50,7 +50,7 @@ const EditablePage = () => {
         // If a new block was added, move the caret to it
         if (prevBlocks && prevBlocks.length + 1 === blocks.length) {
             const nextBlockPosition =
-                blocks.map((b) => b._id).indexOf(currentBlockId) + 1 + 1;
+                blocks.map((b) => b.id).indexOf(currentBlockId) + 1 + 1;
             const nextBlock = document.querySelector<HTMLElement>(
                 `[data-position="${nextBlockPosition}"]`
             );
@@ -61,7 +61,7 @@ const EditablePage = () => {
         // If a block was deleted, move the caret to the end of the last block
         if (prevBlocks && prevBlocks.length - 1 === blocks.length) {
             const lastBlockPosition = prevBlocks
-                .map((b) => b._id)
+                .map((b) => b.id)
                 .indexOf(currentBlockId);
             const lastBlock = document.querySelector<HTMLElement>(
                 `[data-position="${lastBlockPosition}"]`
@@ -73,7 +73,7 @@ const EditablePage = () => {
     }, [blocks, prevBlocks, currentBlockId]);
 
     const updateBlockHandler = (currentBlock: Block) => {
-        const index = blocks.map((b) => b._id).indexOf(currentBlock._id);
+        const index = blocks.map((b) => b.id).indexOf(currentBlock.id);
         const oldBlock = blocks[index];
         const updatedBlocks = [...blocks];
         updatedBlocks[index] = {
@@ -81,7 +81,7 @@ const EditablePage = () => {
             tag: currentBlock.tag ?? "undefined tag",
             html: currentBlock.html ?? "undefined Html",
             imageUrl: currentBlock.imageUrl ?? "undefined image",
-            _id: currentBlock._id
+            id: currentBlock.id
         };
         setBlocks(updatedBlocks);
         // If the image has been changed, we have to delete the
@@ -93,27 +93,25 @@ const EditablePage = () => {
     };
 
     const addBlockHandler = (currentBlock: Block) => {
-        console.log(currentBlock);
-
-        setCurrentBlockId(currentBlock._id);
-        const index = blocks.map((b) => b._id).indexOf(currentBlock._id);
+        setCurrentBlockId(currentBlock.id);
+        const index = blocks.map((b) => b.id).indexOf(currentBlock.id);
         const updatedBlocks = [...blocks];
-        const newBlock = { _id: objectId(), tag: "p" };
+        const newBlock: Block = { id: objectId(), tag: "p", html: "", imageUrl: "" };
         updatedBlocks.splice(index + 1, 0, newBlock);
         updatedBlocks[index] = {
             ...updatedBlocks[index],
-            tag: currentBlock.tag ,
-            html: currentBlock.html ,
-            imageUrl: currentBlock.imageUrl ,
-            _id: currentBlock._id
+            tag: currentBlock.tag,
+            html: currentBlock.html,
+            imageUrl: currentBlock.imageUrl,
+            id: currentBlock.id
         };
         setBlocks(updatedBlocks);
     };
 
     const deleteBlockHandler = (currentBlock: Block) => {
         if (blocks.length > 1) {
-            setCurrentBlockId(currentBlock._id);
-            const index = blocks.map((b) => b._id).indexOf(currentBlock._id);
+            setCurrentBlockId(currentBlock.id);
+            const index = blocks.map((b) => b.id).indexOf(currentBlock.id);
             const deletedBlock = blocks[index];
             const updatedBlocks = [...blocks];
             updatedBlocks.splice(index, 1);
@@ -127,8 +125,7 @@ const EditablePage = () => {
         }
     };
 
-    const onDragEndHandler = (result) => {
-        console.log({ result });
+    const onDragEndHandler = (result: DropResult) => {
 
         const { destination, source } = result;
 
@@ -139,9 +136,15 @@ const EditablePage = () => {
         }
 
         const updatedBlocks = [...blocks];
-        const removedBlocks = updatedBlocks.splice(source.index - 1, 1);
-        updatedBlocks.splice(destination.index - 1, 0, removedBlocks[0]);
-        setBlocks(updatedBlocks);
+
+        // Remove the item from the source index
+        const [removed] = updatedBlocks.splice(source.index - 1, 1);
+
+        // Insert the item at the destination index
+        if (removed) {
+            updatedBlocks.splice(destination.index - 1, 0, removed);
+            setBlocks(updatedBlocks);
+        }
     };
 
     const pageId = "5f54d75b114c6d176d7e9767"
@@ -154,33 +157,35 @@ const EditablePage = () => {
                     <p>It will be automatically deleted after 24 hours.</p>
                 </Notice>
             )} */}
-            {/* <DragDropContext onDragEnd={onDragEndHandler}>
+            <DragDropContext onDragEnd={onDragEndHandler}>
                 <Droppable droppableId={pageId}>
                     {(provided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps}> */}
-            {blocks.map((block) => {
-                const position =
-                    blocks.map((b) => b._id).indexOf(block._id) + 1;
-                return (
-                    <EditableBlock
-                        key={block._id}
-                        position={position}
-                        id={block._id}
-                        tag={block.tag}
-                        html={block.html}
-                        imageUrl={block.imageUrl}
-                        pageId={pageId}
-                        addBlock={addBlockHandler}
-                        deleteBlock={deleteBlockHandler}
-                        updatePage={updateBlockHandler}
-                    />
-                );
-            })}
-            {/* {provided.placeholder}
+                        <div ref={provided.innerRef} {...provided.droppableProps}>
+                            {blocks.map((block) => {
+                                console.log(blocks);
+                                const position =
+                                    blocks.map((b) => b.id).indexOf(block.id) + 1;
+
+                                return (
+                                    <EditableBlock
+                                        key={block.id}
+                                        position={position}
+                                        id={block.id}
+                                        tag={block.tag}
+                                        html={block.html}
+                                        imageUrl={block.imageUrl}
+                                        pageId={pageId}
+                                        addBlock={addBlockHandler}
+                                        deleteBlock={deleteBlockHandler}
+                                        updateBlock={updateBlockHandler}
+                                    />
+                                );
+                            })}
+                            {provided.placeholder}
                         </div>
                     )}
                 </Droppable>
-            </DragDropContext> */}
+            </DragDropContext>
         </>
     );
 };
