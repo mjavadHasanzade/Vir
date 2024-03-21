@@ -1,13 +1,9 @@
 "use client"
 import { useState, useEffect } from "react";
 import { DragDropContext, type DropResult, Droppable } from "react-beautiful-dnd";
-import { resetServerContext } from "react-beautiful-dnd"
-resetServerContext()
 import EditableBlock from "./editable-block";
-
 import { setCaretToEnd, objectId, initialBlock } from "~/utils";
 import usePrevious from "~/hooks/usePrevious";
-import Notice from "./notice";
 
 // A page is represented by an array containing several blocks
 // [
@@ -32,9 +28,10 @@ import Notice from "./notice";
 
 interface Block {
     id: string;
-    html: string;
-    tag: string;
-    imageUrl: string;
+    html?: string;
+    tag?: string;
+    imageUrl?: string;
+    ref?: HTMLElement | null
 }
 
 const EditablePage = () => {
@@ -151,18 +148,12 @@ const EditablePage = () => {
 
     return (
         <>
-            {/* {true && (
-                <Notice status="ERROR" dismissible>
-                    <h4>Hey 👋 You just created a public page.</h4>
-                    <p>It will be automatically deleted after 24 hours.</p>
-                </Notice>
-            )} */}
+
             <DragDropContext onDragEnd={onDragEndHandler}>
                 <Droppable droppableId={pageId}>
                     {(provided) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>
                             {blocks.map((block) => {
-                                console.log(blocks);
                                 const position =
                                     blocks.map((b) => b.id).indexOf(block.id) + 1;
 
@@ -171,9 +162,9 @@ const EditablePage = () => {
                                         key={block.id}
                                         position={position}
                                         id={block.id}
-                                        tag={block.tag}
-                                        html={block.html}
-                                        imageUrl={block.imageUrl}
+                                        tag={block.tag!}
+                                        html={block.html!}
+                                        imageUrl={block.imageUrl!}
                                         pageId={pageId}
                                         addBlock={addBlockHandler}
                                         deleteBlock={deleteBlockHandler}

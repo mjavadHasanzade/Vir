@@ -16,7 +16,7 @@ type Position = {
 interface TagSelectorMenuProps {
   position: Position;
   closeMenu: () => void;
-  handleSelection: (tag: string) => void;
+  handleSelection: (tag?: string) => void;
 }
 
 const MENU_HEIGHT = 150;
@@ -68,7 +68,7 @@ const TagSelectorMenu: React.FC<TagSelectorMenuProps> = ({ position, closeMenu, 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        handleSelection(tagList[selectedTag].tag);
+        handleSelection(tagList[selectedTag]?.tag);
       } else if (e.key === "Tab" || e.key === "ArrowDown") {
         e.preventDefault();
         const newSelectedTag = selectedTag === tagList.length - 1 ? 0 : selectedTag + 1;

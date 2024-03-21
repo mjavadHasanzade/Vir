@@ -1,11 +1,12 @@
-import React, { type ChangeEvent, type FocusEvent, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
+/* eslint-disable @typescript-eslint/unbound-method */
+import React, { type KeyboardEvent, type MouseEvent, type RefObject } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import styles from "./styles.module.scss";
 import TagSelectorMenu from "../tagSelectorMenu";
 import ActionMenu from "../actionMenu";
 import DragHandleIcon from "~/images/draggable.svg";
 import { setCaretToEnd, getCaretCoordinates, getSelection } from "~/utils";
-import ContentEditable from "react-contenteditable";
+import ContentEditable, { type ContentEditableEvent } from "react-contenteditable";
 
 const CMD_KEY = "/";
 
@@ -30,20 +31,21 @@ interface EditableBlockState {
     previousKey: string | null;
     isTyping: boolean;
     tagSelectorMenuOpen: boolean;
-    tagSelectorMenuPosition: { x: number | null; y: number | null };
+    tagSelectorMenuPosition: { x: number; y: number };
     actionMenuOpen: boolean;
-    actionMenuPosition: { x: number | null; y: number | null };
+    actionMenuPosition: { x: number; y: number };
 }
 
 interface Block {
     id: string;
-    html: string;
-    tag: string;
-    imageUrl: string;
+    html?: string;
+    tag?: string;
+    imageUrl?: string;
+    ref?: HTMLElement | null
 }
 
 class EditableBlock extends React.Component<EditableBlockProps, EditableBlockState> {
-    private contentEditable: RefObject<HTMLElement>;
+    private contentEditable: RefObject<HTMLElement | null>;
     private fileInput: HTMLInputElement | null;
 
     constructor(props: EditableBlockProps) {
@@ -52,6 +54,18 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
         this.fileInput = null;
         this.handleTagSelection = this.handleTagSelection.bind(this);
         this.closeActionMenu = this.closeActionMenu.bind(this);
+        this.closeTagSelectorMenu = this.closeTagSelectorMenu.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.openTagSelectorMenu = this.openTagSelectorMenu.bind(this);
+        this.handleFocus = this.handleFocus.bind(this);
+        this.handleBlur = this.handleBlur.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleDragHandleClick = this.handleDragHandleClick.bind(this);
+        this.openActionMenu = this.openActionMenu.bind(this);
+        this.closeActionMenu = this.closeActionMenu.bind(this);
+
         this.state = {
             htmlBackup: null,
             html: "",
@@ -62,30 +76,32 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
             isTyping: false,
             tagSelectorMenuOpen: false,
             tagSelectorMenuPosition: {
-                x: null,
-                y: null,
+                x: 0,
+                y: 0,
             },
             actionMenuOpen: false,
             actionMenuPosition: {
-                x: null,
-                y: null,
+                x: 0,
+                y: 0,
             },
         };
     }
 
     componentDidMount() {
-        const hasPlaceholder = this.addPlaceholder({
-            block: this.contentEditable.current,
-            position: this.props.position,
-            content: this.props.html || this.props.imageUrl,
-        });
-        if (!hasPlaceholder) {
-            this.setState({
-                ...this.state,
-                html: this.props.html,
-                tag: this.props.tag,
-                imageUrl: this.props.imageUrl,
+        if (this.contentEditable?.current) {
+            const hasPlaceholder = this.addPlaceholder({
+                block: this.contentEditable.current,
+                position: this.props.position,
+                content: this.props.html || this.props.imageUrl,
             });
+            if (!hasPlaceholder) {
+                this.setState({
+                    ...this.state,
+                    html: this.props.html,
+                    tag: this.props.tag,
+                    imageUrl: this.props.imageUrl,
+                });
+            }
         }
     }
 
@@ -109,10 +125,11 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
     }
 
     componentWillUnmount() {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         document.removeEventListener("click", this.closeActionMenu, false);
     }
 
-    handleChange(e: ChangeEvent<HTMLInputElement>) {
+    handleChange(e: ContentEditableEvent) {
         this.setState({ ...this.state, html: e.target.value });
     }
 
@@ -129,18 +146,20 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
         }
     }
 
-    handleBlur(e: FocusEvent<HTMLInputElement>) {
-        const hasPlaceholder = this.addPlaceholder({
-            block: this.contentEditable.current,
-            position: this.props.position,
-            content: this.state.html || this.state.imageUrl,
-        });
-        if (!hasPlaceholder) {
-            this.setState({ ...this.state, isTyping: false });
+    handleBlur() {
+        if (this.contentEditable?.current) {
+            const hasPlaceholder = this.addPlaceholder({
+                block: this.contentEditable.current,
+                position: this.props.position,
+                content: this.state.html || this.state.imageUrl,
+            });
+            if (!hasPlaceholder) {
+                this.setState({ ...this.state, isTyping: false });
+            }
         }
     }
 
-    handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    handleKeyDown(e: KeyboardEvent<HTMLInputElement | HTMLDivElement | Element>) {
         if (e.key === CMD_KEY) {
             this.setState({ htmlBackup: this.state.html });
         } else if (e.key === "Backspace" && !this.state.html) {
@@ -162,17 +181,20 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
         this.setState({ previousKey: e.key });
     }
 
-    handleKeyUp(e: KeyboardEvent<HTMLInputElement>) {
+    handleKeyUp(e: KeyboardEvent<HTMLInputElement | HTMLDivElement | Element>) {
         if (e.key === CMD_KEY) {
             this.openTagSelectorMenu("KEY_CMD");
         }
     }
 
     handleMouseUp() {
+
         const block = this.contentEditable.current;
-        const { selectionStart, selectionEnd } = getSelection(block);
-        if (selectionStart !== selectionEnd) {
-            this.openActionMenu(block, "TEXT_SELECTION");
+        if (block) {
+            const { selectionStart, selectionEnd } = getSelection(block);
+            if (selectionStart !== selectionEnd) {
+                this.openActionMenu(block, "TEXT_SELECTION");
+            }
         }
     }
 
@@ -185,7 +207,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
         const { x, y } = this.calculateActionMenuPosition(parent, trigger);
         this.setState({
             ...this.state,
-            actionMenuPosition: { x: x, y: y },
+            actionMenuPosition: { x: x ?? 0, y: y ?? 0 },
             actionMenuOpen: true,
         });
         setTimeout(() => {
@@ -196,7 +218,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
     closeActionMenu() {
         this.setState({
             ...this.state,
-            actionMenuPosition: { x: null, y: null },
+            actionMenuPosition: { x: null ?? 0, y: null ?? 0 },
             actionMenuOpen: false,
         });
         document.removeEventListener("click", this.closeActionMenu, false);
@@ -206,7 +228,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
         const { x, y } = this.calculateTagSelectorMenuPosition(trigger);
         this.setState({
             ...this.state,
-            tagSelectorMenuPosition: { x: x, y: y },
+            tagSelectorMenuPosition: { x: x ?? 0, y: y ?? 0 },
             tagSelectorMenuOpen: true,
         });
         document.addEventListener("click", this.closeTagSelectorMenu, false);
@@ -216,16 +238,16 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
         this.setState({
             ...this.state,
             htmlBackup: null,
-            tagSelectorMenuPosition: { x: null, y: null },
+            tagSelectorMenuPosition: { x: 0, y: 0 },
             tagSelectorMenuOpen: false,
         });
         document.removeEventListener("click", this.closeTagSelectorMenu, false);
     }
 
-    handleTagSelection(tag: string) {
+    handleTagSelection(tag?: string) {
+        if (!tag)
+            this.closeTagSelectorMenu();
         if (tag === "img") {
-            console.log(this);
-
             this.setState({ ...this.state, tag: tag }, () => {
                 this.closeTagSelectorMenu();
                 if (this.fileInput) {
@@ -240,9 +262,11 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                 });
             });
         } else {
-            if (this.state.isTyping) {
-                this.setState({ tag: tag, html: this.state.htmlBackup }, () => {
-                    setCaretToEnd(this.contentEditable.current);
+            if (this.state.isTyping && this.state.htmlBackup) {
+
+                this.setState({ tag: tag!, html: this.state.htmlBackup }, () => {
+                    if (this.state.htmlBackup && this.contentEditable.current)
+                        setCaretToEnd(this.contentEditable.current);
                     this.closeTagSelectorMenu();
                 });
             } else {
@@ -254,9 +278,9 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
     }
 
     async handleImageUpload() {
-        if (this.fileInput && this.fileInput.files[0]) {
+        if (this.fileInput?.files && this.fileInput?.files.length > 0) {
             const pageId = this.props.pageId;
-            const imageFile = this.fileInput.files[0];
+            const imageFile: Blob = this.fileInput.files[0] as Blob;
             const formData = new FormData();
             formData.append("image", imageFile);
             try {
@@ -268,8 +292,12 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                         body: formData,
                     }
                 );
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const data = await response.json();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const imageUrl = data.imageUrl;
+                //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this.setState({ ...this.state, imageUrl: imageUrl });
             } catch (err) {
                 console.log(err);
@@ -279,7 +307,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
 
     addPlaceholder({ block, position, content }: { block: HTMLElement; position: number; content: string }) {
         const isFirstBlockWithoutHtml = position === 1 && !content;
-        const isFirstBlockWithoutSibling = !block.parentElement.nextElementSibling;
+        const isFirstBlockWithoutSibling = !block.parentElement?.nextElementSibling;
         if (isFirstBlockWithoutHtml && isFirstBlockWithoutSibling) {
             this.setState({
                 ...this.state,
@@ -298,7 +326,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
     calculateActionMenuPosition(parent: HTMLElement, initiator: string) {
         switch (initiator) {
             case "TEXT_SELECTION":
-                const { x: endX, y: endY } = getCaretCoordinates(false);
+                const { x: endX } = getCaretCoordinates(false);
                 const { x: startX, y: startY } = getCaretCoordinates(true);
                 const middleX = startX + (endX - startX) / 2;
                 return { x: middleX, y: startY };
@@ -318,7 +346,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                 return { x: caretLeft, y: caretTop };
             case "ACTION_MENU":
                 const { x: actionX, y: actionY } = this.state.actionMenuPosition;
-                return { x: actionX - 40, y: actionY };
+                return { x: actionX ? actionX : 0 - 40, y: actionY };
             default:
                 return { x: null, y: null };
         }
@@ -329,7 +357,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
             <>
                 {this.state.tagSelectorMenuOpen && (
                     <TagSelectorMenu
-                        position={this.state.tagSelectorMenuPosition}
+                        position={this.state.tagSelectorMenuPosition ?? { x: 0, y: 0 }}
                         closeMenu={this.closeTagSelectorMenu}
                         handleSelection={this.handleTagSelection}
                     />
@@ -358,7 +386,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                                     html={this.state.html}
                                     onChange={(e) => this.handleChange(e)}
                                     onFocus={() => this.handleFocus()}
-                                    onBlur={(e) => this.handleBlur(e)}
+                                    onBlur={() => this.handleBlur()}
                                     onKeyDown={(e) => this.handleKeyDown(e)}
                                     onKeyUp={(e) => this.handleKeyUp(e)}
                                     onMouseUp={() => this.handleMouseUp()}
@@ -379,7 +407,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                                 <div
                                     data-position={this.props.position}
                                     data-tag={this.state.tag}
-                                    ref={this.contentEditable}
+                                    ref={this.contentEditable ? this.contentEditable : undefined}
                                     className={[
                                         styles.image,
                                         this.state.actionMenuOpen || this.state.tagSelectorMenuOpen
@@ -404,11 +432,13 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                                         </label>
                                     )}
                                     {this.state.imageUrl && (
+                                        // eslint-disable-next-line @next/next/no-img-element
                                         <img
                                             src={
                                                 process.env.NEXT_PUBLIC_API + "/" + this.state.imageUrl
                                             }
-                                            alt={/[^\/]+(?=\.[^\/.]*$)/.exec(this.state.imageUrl)[0]}
+                                            // alt={/[^\/]+(?=\.[^\/.]*$)/.exec(this.state.imageUrl)[0]}
+                                            alt=""
                                         />
                                     )}
                                 </div>
@@ -420,6 +450,7 @@ class EditableBlock extends React.Component<EditableBlockProps, EditableBlockSta
                                 onClick={(e) => this.handleDragHandleClick(e)}
                                 {...provided.dragHandleProps}
                             >
+                                {/* eslint-disable-next-line @next/next/no-img-element, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
                                 <img src={DragHandleIcon.src} alt="Icon" />
                             </span>
                         </div>

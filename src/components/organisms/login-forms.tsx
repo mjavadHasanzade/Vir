@@ -156,7 +156,6 @@ const LoginForms: React.FC<Props> = (props) => {
                     <button className="w-full bg-[#263238] text-white py-2 px-4 rounded-[.25rem] text-sm mb-4"
                         onClick={() => {
                             userSignup.mutate(signupForm)
-                            console.log(signupForm);
                         }}>
                         Sign up
                     </button>

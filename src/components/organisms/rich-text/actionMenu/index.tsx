@@ -30,7 +30,7 @@ const ActionMenu: React.FC<{ position: Position; actions: Actions }> = ({ positi
           id="turn-into"
           className={styles.menuItem}
           role="button"
-          tabIndex="0"
+          tabIndex={0}
           onClick={() => actions.turnInto()}
         >
           Turn into
@@ -39,9 +39,10 @@ const ActionMenu: React.FC<{ position: Position; actions: Actions }> = ({ positi
           id="delete"
           className={styles.menuItem}
           role="button"
-          tabIndex="0"
+          tabIndex={0}
           onClick={() => actions.deleteBlock()}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element, @next/next/no-img-element, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */}
           <img src={TrashIcon.src} alt="Trash Icon" />
         </span>
       </div>
