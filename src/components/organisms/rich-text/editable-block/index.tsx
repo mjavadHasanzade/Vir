@@ -6,16 +6,21 @@ import getCaretCoordinates from '~/utils/getCaretCoordinates';
 import { setCaretToEnd } from '~/utils';
 
 interface Block {
-    id: string;
-    html: string;
-    tag: string;
+    _id: string;
+    html?: string;
+    tag?: string;
+    imageUrl?: string;
+    ref?: HTMLElement;
 }
 
 interface EditableBlockProps {
     id: string;
     html: string;
     tag: string;
-    updatePage: (data: { id: string; html: string; tag: string }) => void;
+    position: number;
+    imageUrl: string;
+    pageId: string;
+    updatePage: (currentBlock: Block) => void;
     addBlock: (currentBlock: Block) => void;
     deleteBlock: (currentBlock: Block) => void;
 }
@@ -25,11 +30,11 @@ function EditableBlock(props: EditableBlockProps) {
     const [tag, setTag] = useState<string>(props.tag);
     const [htmlBackup, setHtmlBackup] = useState('');
     const [previousKey, setPreviousKey] = useState('');
-    const contentEditable = useRef<any>(undefined);
+    const contentEditable = useRef<HTMLElement | undefined>(undefined);
 
 
     const [selectMenuIsOpen, setSelectMenuIsOpen] = useState(false);
-    const [selectMenuPosition, setSelectMenuPosition] = useState<{ x: number | null, y: number | null }>({ x: null, y: null });
+    const [selectMenuPosition, setSelectMenuPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
 
     // useEffect(() => {
     //     setHtml(props.html);
@@ -46,7 +51,7 @@ function EditableBlock(props: EditableBlockProps) {
 
         if (htmlChanged || tagChanged) {
             props.updatePage({
-                id: props.id,
+                _id: props.id,
                 html: String(html),
                 tag: tag,
             });
@@ -67,7 +72,7 @@ function EditableBlock(props: EditableBlockProps) {
                 if (previousKey !== 'Shift') {
                     e.preventDefault();
                     props.addBlock({
-                        id: props.id,
+                        _id: props.id,
                         ref: contentEditable.current,
                     });
                 }
@@ -77,7 +82,7 @@ function EditableBlock(props: EditableBlockProps) {
 
                 e.preventDefault();
                 props.deleteBlock({
-                    id: props.id,
+                    _id: props.id,
                     ref: contentEditable.current,
                 });
             }
@@ -96,7 +101,7 @@ function EditableBlock(props: EditableBlockProps) {
     const closeSelectMenuHandler = () => {
         setHtml("");
         setSelectMenuIsOpen(false);
-        setSelectMenuPosition({ x: null, y: null });
+        setSelectMenuPosition({ x: 0, y: 0 });
         document.removeEventListener('click', closeSelectMenuHandler);
     };
 
