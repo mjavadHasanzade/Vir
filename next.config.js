@@ -6,6 +6,7 @@ await import("./src/env.js");
 
 /** @type {import("next").NextConfig} */
 const config = {
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
@@ -27,6 +28,9 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   workboxOptions: {
     disableDevLogs: true,
+  },
+  sassOptions: {
+    includePaths: ['./src/styles'],
   },
 });
 export default withPWA(config);
