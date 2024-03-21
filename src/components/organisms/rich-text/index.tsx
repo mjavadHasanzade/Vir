@@ -34,10 +34,10 @@ interface Block {
     ref?: HTMLElement | null
 }
 
-const EditablePage = () => {
+const EditablePage = ({ setBlocks, blocks }: { setBlocks: (data: Block[]) => void, blocks: Block[] }) => {
 
 
-    const [blocks, setBlocks] = useState<Array<Block>>([initialBlock]);
+
     const [currentBlockId, setCurrentBlockId] = useState<string>('');
 
     const prevBlocks = usePrevious(blocks);
